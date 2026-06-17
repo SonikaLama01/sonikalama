@@ -506,6 +506,10 @@
       display: none; font-size: 0.82rem;
       color: var(--accent); margin-top: 0.5rem;
     }
+    .form-error {
+      display: none; font-size: 0.82rem;
+      color: #e85d26; margin-top: 0.5rem;
+    }
 
     /* ── FOOTER ───────────────────────────────────────────── */
     footer {
@@ -580,7 +584,8 @@
   <div class="nav-right">
     <span class="theme-icon" id="themeIcon">🌙</span>
     <button class="theme-btn" id="themeToggle" aria-label="Toggle dark/light mode" title="Toggle theme"></button>
-<a href="CV/Sonika%20Resume.pdf" download="Sonika_Resume.pdf">↓ CV</a>  </div>
+    <a href="#" class="nav-cv">↓ CV</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -958,15 +963,15 @@
       </div>
     </div>
 
-    <form class="contact-form" onsubmit="handleForm(event)">
+    <form class="contact-form" id="contactForm" action="https://formspree.io/f/mzdqwnpe" method="POST">
       <div class="form-row2">
-        <div class="fg"><label>Full Name</label><input type="text" placeholder="Your full name" /></div>
-        <div class="fg"><label>Email Address</label><input type="email" placeholder="your@email.com" /></div>
+        <div class="fg"><label>Full Name</label><input type="text" name="name" placeholder="Your full name" required /></div>
+        <div class="fg"><label>Email Address</label><input type="email" name="email" placeholder="your@email.com" required /></div>
       </div>
-      <div class="fg"><label>Subject</label><input type="text" placeholder="Subject" /></div>
+      <div class="fg"><label>Subject</label><input type="text" name="subject" placeholder="Subject" /></div>
       <div class="fg">
         <label>Enquiry Type</label>
-        <select>
+        <select name="enquiry_type">
           <option value="">Select a type</option>
           <option>Job Opportunity</option>
           <option>Freelance Project</option>
@@ -974,9 +979,10 @@
           <option>General Inquiry</option>
         </select>
       </div>
-      <div class="fg"><label>Message</label><textarea placeholder="Your message..."></textarea></div>
+      <div class="fg"><label>Message</label><textarea name="message" placeholder="Your message..." required></textarea></div>
       <button class="form-submit" type="submit">Send Message →</button>
       <p class="form-success" id="formSuccess">✦ Message sent — I'll be in touch soon!</p>
+      <p class="form-error" id="formError">⚠ Something went wrong — please try again or email me directly.</p>
     </form>
   </div>
 </section>
@@ -1047,11 +1053,41 @@
 
   sections.forEach(s => navObs.observe(s));
 
-  // ── Form ────────────────────────────────────────────────
-  function handleForm(e) {
+  // ── Form: submit to Formspree via fetch ──────────────────
+  const contactForm = document.getElementById('contactForm');
+  const successMsg  = document.getElementById('formSuccess');
+  const errorMsg     = document.getElementById('formError');
+
+  contactForm.addEventListener('submit', async function (e) {
     e.preventDefault();
-    document.getElementById('formSuccess').style.display = 'block';
-  }
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+
+    const submitBtn = contactForm.querySelector('.form-submit');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Sending…';
+    submitBtn.disabled = true;
+
+    try {
+      const response = await fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (response.ok) {
+        successMsg.style.display = 'block';
+        contactForm.reset();
+      } else {
+        errorMsg.style.display = 'block';
+      }
+    } catch (err) {
+      errorMsg.style.display = 'block';
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  });
 </script>
 </body>
 </html>
